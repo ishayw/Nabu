@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sounddevice
+soundfile
+numpy
+google-generativeai
+python-dotenv
+jinja2
+python-multipart

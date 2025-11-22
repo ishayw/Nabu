@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment Variables
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite3
+app/meeting_db.sqlite
+
+# Recordings
+recordings/
+*.wav
+*.m4a
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+debug_log.txt
+
+# OS
+.DS_Store
+Thumbs.db
