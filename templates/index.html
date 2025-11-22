@@ -13,67 +13,87 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#1d4ed8', // Royal Blue
-                        accent: '#fbbf24', // Gold (Amber-400)
-                        secondary: '#10b981',
+                        primary: '#06b6d4', // Neon Cyan (Cyan-500)
+                        accent: '#f59e0b', // Circuit Gold (Amber-500)
+                        secondary: '#10b981', // Emerald
                         danger: '#ef4444',
-                        dark: '#0f172a', // Slate-900 (Cooler dark)
-                        darker: '#020617', // Slate-950
-                        surface: '#1e293b' // Slate-800
+                        dark: '#020617', // Deep Void (Slate-950)
+                        darker: '#000000', // Pure Black for contrast
+                        surface: '#0f172a' // Tech Slate (Slate-900)
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(6, 182, 212, 0.3)',
+                        'gold': '0 0 10px rgba(245, 158, 11, 0.5), 0 0 20px rgba(245, 158, 11, 0.3)',
                     }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
 
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #020617;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
+            background: #1e293b;
+            border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: #334155;
         }
 
         /* Enhanced Prose Typography */
         .prose h1 {
-            font-size: 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.25rem;
             font-weight: 700;
             color: #f8fafc;
             margin-top: 2rem;
             margin-bottom: 1rem;
-            line-height: 1.3;
-            border-bottom: 2px solid #334155;
+            line-height: 1.2;
+            border-bottom: 1px solid #1e293b;
             padding-bottom: 0.5rem;
         }
 
         .prose h2 {
-            font-size: 1.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
             font-weight: 600;
             color: #e2e8f0;
             margin-top: 1.75rem;
             margin-bottom: 0.75rem;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .prose h3 {
-            font-size: 1.25rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
             font-weight: 600;
             color: #cbd5e1;
             margin-top: 1.5rem;
@@ -85,7 +105,7 @@
             margin-top: 0.75rem;
             margin-bottom: 0.75rem;
             line-height: 1.8;
-            color: #cbd5e1;
+            color: #94a3b8;
         }
 
         .prose ul,
@@ -99,81 +119,101 @@
         .prose li {
             margin-top: 0.5rem;
             margin-bottom: 0.5rem;
-            color: #cbd5e1;
+            color: #94a3b8;
         }
 
         .prose strong {
-            color: #f1f5f9;
+            color: #06b6d4;
+            /* Neon Cyan highlight */
             font-weight: 600;
         }
 
         .prose blockquote {
-            border-left: 4px solid #fbbf24;
-            /* Gold accent */
+            border-left: 3px solid #f59e0b;
+            /* Circuit Gold */
             padding-left: 1rem;
             margin: 1rem 0;
             font-style: italic;
-            color: #94a3b8;
+            color: #cbd5e1;
+            background: rgba(245, 158, 11, 0.05);
+            padding: 0.5rem 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
         }
 
         .prose code {
-            background: #1e293b;
+            background: #0f172a;
             padding: 0.2rem 0.4rem;
             border-radius: 0.25rem;
             font-size: 0.875rem;
-            color: #fbbf24;
-            /* Gold accent */
+            color: #f59e0b;
+            /* Circuit Gold */
+            font-family: 'Space Mono', monospace;
+            border: 1px solid #1e293b;
         }
     </style>
 </head>
 
-<body class="bg-darker text-gray-100 font-sans antialiased h-screen flex flex-col overflow-hidden">
+<body
+    class="bg-dark text-gray-100 font-sans antialiased h-screen flex flex-col overflow-hidden selection:bg-primary/30 selection:text-white">
 
     <!-- Header -->
     <header
-        class="bg-dark/80 backdrop-blur-md border-b border-gray-800 p-4 flex justify-between items-center shadow-lg z-20">
-        <div class="flex items-center space-x-4">
-            <img src="/static/logo.png" alt="Nabu Logo"
-                class="w-10 h-10 rounded-lg shadow-md border border-gray-700/50">
+        class="bg-dark/90 backdrop-blur-xl border-b border-gray-800/50 p-4 flex justify-between items-center shadow-2xl z-20 relative overflow-hidden">
+        <!-- Subtle glow line at bottom -->
+        <div
+            class="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent">
+        </div>
+
+        <div class="flex items-center space-x-4 z-10">
+            <div class="relative group">
+                <div
+                    class="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-30 group-hover:opacity-70 transition duration-200">
+                </div>
+                <img src="/static/logo.png" alt="Nabu Logo"
+                    class="relative w-10 h-10 rounded-lg border border-gray-700/50 bg-dark">
+            </div>
             <h1
-                class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-tight">
+                class="text-3xl font-bold font-display bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-tight">
                 Nabu</h1>
         </div>
 
         <!-- Status Badge -->
         <div id="status-badge"
-            class="px-3 py-1 rounded-full text-xs font-semibold bg-surface text-gray-300 flex items-center space-x-2 border border-gray-700 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-gray-500"></span>
-            <span>Idle</span>
+            class="px-3 py-1 rounded-full text-xs font-semibold font-mono bg-surface/50 text-gray-400 flex items-center space-x-2 border border-gray-800 shadow-inner backdrop-blur-sm">
+            <span class="w-2 h-2 rounded-full bg-gray-600 shadow-[0_0_5px_rgba(75,85,99,0.5)]"></span>
+            <span class="uppercase tracking-wider">Idle</span>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
 
         <!-- Sidebar -->
-        <aside class="w-80 bg-dark border-r border-gray-800 flex flex-col z-10">
+        <aside class="w-80 bg-darker border-r border-gray-800/50 flex flex-col z-10">
             <!-- Sidebar Controls -->
-            <div class="p-4 border-b border-gray-800 space-y-3">
+            <div class="p-4 border-b border-gray-800/50 space-y-4">
                 <!-- Upload -->
                 <input type="file" id="upload-input" class="hidden" accept="audio/*" onchange="uploadFile(this)">
                 <button onclick="document.getElementById('upload-input').click()"
-                    class="w-full py-2.5 px-4 bg-surface hover:bg-gray-700 border border-gray-700 hover:border-gray-600 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 group">
+                    class="w-full py-3 px-4 bg-surface hover:bg-gray-800 border border-gray-800 hover:border-primary/50 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 group relative overflow-hidden">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    </div>
                     <svg xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 text-accent group-hover:text-white transition-colors" fill="none"
+                        class="h-4 w-4 text-primary group-hover:text-white transition-colors relative z-10" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    <span>Upload Recording</span>
+                    <span class="relative z-10 text-gray-300 group-hover:text-white">Upload Recording</span>
                 </button>
 
                 <!-- Search -->
-                <div class="relative">
-                    <input type="text" id="search-input" placeholder="Search meetings..."
-                        class="w-full bg-surface border border-gray-700 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                <div class="relative group">
+                    <input type="text" id="search-input" placeholder="Search archives..."
+                        class="w-full bg-surface/50 border border-gray-800 rounded-lg py-2.5 pl-10 pr-3 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
                         oninput="searchHistory(this.value)">
-                    <svg class="h-4 w-4 text-gray-500 absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-4 w-4 text-gray-600 group-focus-within:text-primary absolute left-3 top-3 transition-colors"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -183,93 +223,107 @@
             <!-- History List -->
             <div class="flex-1 overflow-y-auto p-2" id="history-list">
                 <!-- Items will be injected here -->
-                <div class="text-center text-gray-500 mt-10 text-sm">Loading history...</div>
+                <div
+                    class="flex flex-col items-center justify-center h-32 text-gray-600 text-xs uppercase tracking-widest">
+                    <span>No Archives</span>
+                </div>
             </div>
 
             <!-- Clear History -->
-            <div class="p-4 border-t border-gray-800">
+            <div class="p-4 border-t border-gray-800/50">
                 <button onclick="clearHistory()"
-                    class="w-full py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors">
-                    Clear History
+                    class="w-full py-2 text-xs font-mono text-red-500/70 hover:text-red-400 hover:bg-red-950/30 rounded transition-colors border border-transparent hover:border-red-900/50">
+                    CLEAR DATABASE
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 relative bg-darker overflow-hidden">
+        <main class="flex-1 relative bg-dark overflow-hidden flex flex-col">
+
+            <!-- Background Grid Effect -->
+            <div
+                class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none">
+            </div>
 
             <!-- Dashboard / Empty State (Visualizer & Controls) -->
             <div id="empty-state"
-                class="absolute inset-0 flex flex-col items-center justify-center p-8 transition-opacity duration-300">
+                class="absolute inset-0 flex flex-col items-center justify-center p-8 transition-opacity duration-300 z-10">
 
                 <!-- Visualizer -->
-                <div class="relative w-64 h-64 flex items-center justify-center mb-12">
+                <div class="relative w-72 h-72 flex items-center justify-center mb-16">
+                    <!-- Outer Rings -->
+                    <div class="absolute inset-0 rounded-full border border-gray-800 opacity-50"></div>
+                    <div class="absolute inset-4 rounded-full border border-gray-800/50 opacity-30"></div>
+
+                    <!-- Dynamic Ring -->
                     <div id="visualizer-ring"
-                        class="absolute inset-0 rounded-full border-4 border-surface opacity-50 transition-all duration-300">
+                        class="absolute inset-0 rounded-full border-2 border-primary/30 shadow-[0_0_15px_rgba(6,182,212,0.1)] transition-all duration-300">
                     </div>
+
+                    <!-- Pulse Core -->
                     <div id="visualizer-pulse"
-                        class="absolute inset-0 rounded-full bg-primary/30 opacity-0 transition-all duration-100 blur-xl">
+                        class="absolute inset-0 rounded-full bg-primary/10 opacity-0 transition-all duration-100 blur-2xl">
                     </div>
                     <div id="visualizer-pulse-core"
-                        class="absolute inset-0 rounded-full bg-primary opacity-0 transition-all duration-100"></div>
+                        class="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-blue-600 opacity-0 transition-all duration-100 mix-blend-screen">
+                    </div>
 
                     <div class="z-10 flex flex-col items-center">
-                        <span id="status-text" class="text-3xl font-bold text-white tracking-wide">Ready</span>
+                        <span id="status-text"
+                            class="text-4xl font-bold font-display text-white tracking-tight drop-shadow-lg">Ready</span>
                         <span id="timer"
-                            class="text-lg text-accent mt-2 font-mono opacity-0 transition-opacity">00:00</span>
+                            class="text-xl text-accent mt-3 font-mono opacity-0 transition-opacity drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]">00:00</span>
                     </div>
                 </div>
 
                 <!-- Controls -->
-                <div class="w-full max-w-md space-y-6">
+                <div class="w-full max-w-md space-y-8">
                     <!-- Mic Select -->
-                    <div>
+                    <div class="group">
                         <label
-                            class="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider text-center">Microphone
-                            Input</label>
+                            class="block text-[10px] font-bold text-primary/70 mb-2 uppercase tracking-[0.2em] text-center group-hover:text-primary transition-colors">Audio
+                            Input Source</label>
                         <div class="relative">
                             <select id="micSelect" onchange="changeDevice()"
-                                class="block w-full pl-4 pr-10 py-3 text-base bg-surface border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded-xl text-white appearance-none transition-colors hover:bg-gray-700 cursor-pointer shadow-lg">
-                                <option>Loading devices...</option>
+                                class="block w-full pl-4 pr-10 py-4 text-sm bg-surface/80 backdrop-blur border border-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary rounded-xl text-gray-200 appearance-none transition-all hover:bg-surface cursor-pointer shadow-lg">
+                                <option>Scanning audio devices...</option>
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
                     </div>
 
                     <!-- Buttons -->
-                    <div class="flex space-x-4">
+                    <div class="flex space-x-6">
                         <button id="btn-start" onclick="control('start')"
-                            class="flex-1 py-4 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-blue-500 rounded-xl font-bold text-white shadow-lg hover:shadow-primary/50 transition-all duration-200 flex items-center justify-center space-x-2 group transform hover:-translate-y-0.5">
-                            <div
-                                class="w-3 h-3 rounded-full bg-red-500 group-hover:bg-white transition-colors shadow-sm">
-                            </div>
-                            <span>Record</span>
+                            class="flex-1 py-5 bg-gradient-to-r from-primary to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-2xl font-bold font-display text-white shadow-neon hover:shadow-[0_0_20px_rgba(6,182,212,0.6)] transition-all duration-300 flex items-center justify-center space-x-3 group transform hover:-translate-y-1">
+                            <div class="w-3 h-3 rounded-full bg-white shadow-[0_0_10px_white] animate-pulse"></div>
+                            <span class="tracking-wide">INITIATE</span>
                         </button>
                         <button id="btn-stop" onclick="control('stop')" disabled
-                            class="flex-1 py-4 bg-surface text-gray-500 rounded-xl font-bold shadow-none transition-all duration-200 flex items-center justify-center space-x-2 cursor-not-allowed opacity-50">
-                            <div class="w-3 h-3 rounded-sm bg-gray-500"></div>
-                            <span>Stop</span>
+                            class="flex-1 py-5 bg-surface text-gray-600 rounded-2xl font-bold font-display shadow-none transition-all duration-300 flex items-center justify-center space-x-3 cursor-not-allowed opacity-50 border border-gray-800">
+                            <div class="w-3 h-3 rounded-sm bg-gray-600"></div>
+                            <span class="tracking-wide">TERMINATE</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Meeting View -->
-            <div id="meeting-view" class="absolute inset-0 bg-darker z-20 hidden flex flex-col">
+            <div id="meeting-view" class="absolute inset-0 bg-dark/95 backdrop-blur-xl z-20 hidden flex flex-col">
                 <!-- Toolbar -->
-                <div
-                    class="flex justify-between items-start gap-4 p-8 border-b border-gray-800 bg-dark/80 backdrop-blur-md">
-                    <h2 id="meeting-title" class="text-2xl font-bold text-white leading-relaxed flex-1 break-words">
+                <div class="flex justify-between items-start gap-6 p-8 border-b border-gray-800 bg-dark/50">
+                    <h2 id="meeting-title"
+                        class="text-3xl font-bold font-display text-white leading-tight flex-1 break-words drop-shadow-md">
                         Meeting Summary</h2>
                     <button onclick="closeMeeting()"
-                        class="p-2 hover:bg-surface rounded-full transition-colors text-gray-400 hover:text-white flex-shrink-0">
+                        class="p-3 hover:bg-surface rounded-full transition-colors text-gray-500 hover:text-white flex-shrink-0 border border-transparent hover:border-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -279,24 +333,31 @@
                 </div>
 
                 <!-- Scrollable Content -->
-                <div class="flex-1 overflow-y-auto p-10">
-                    <div class="max-w-4xl mx-auto space-y-10">
+                <div class="flex-1 overflow-y-auto p-12">
+                    <div class="max-w-4xl mx-auto space-y-12">
 
                         <!-- Audio Player -->
-                        <div class="bg-surface p-5 rounded-xl border border-gray-700 shadow-lg">
-                            <audio id="audio-player" controls class="w-full accent-primary"></audio>
+                        <div class="bg-surface/50 p-6 rounded-2xl border border-gray-800 shadow-xl backdrop-blur-sm">
+                            <audio id="audio-player" controls class="w-full accent-primary h-10"></audio>
                         </div>
 
                         <!-- Tags -->
                         <div class="space-y-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-sm font-medium text-accent uppercase tracking-wider">Tags</span>
+                            <div class="flex items-center space-x-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-xs font-bold text-accent uppercase tracking-[0.2em]">Metadata
+                                    Tags</span>
                             </div>
-                            <div class="flex flex-wrap gap-2 items-center">
-                                <div id="tags-display" class="flex flex-wrap gap-2"></div>
-                                <div class="flex items-center relative">
-                                    <input id="tag-input" type="text" placeholder="+ Add tag"
-                                        class="bg-transparent border border-gray-600 border-dashed rounded-full px-3 py-1 text-sm text-gray-300 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all w-24 focus:w-40"
+                            <div class="flex flex-wrap gap-3 items-center">
+                                <div id="tags-display" class="flex flex-wrap gap-3"></div>
+                                <div class="flex items-center relative group">
+                                    <input id="tag-input" type="text" placeholder="+ TAG"
+                                        class="bg-transparent border border-gray-700 border-dashed rounded-full px-4 py-1.5 text-xs font-mono text-gray-300 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all w-24 focus:w-40 placeholder-gray-600"
                                         onkeypress="if(event.key==='Enter') addTag()">
                                 </div>
                             </div>
@@ -305,13 +366,15 @@
                         <!-- Copy Summary Button -->
                         <div class="flex justify-end">
                             <button id="copy-summary-btn" onclick="copySummaryToClipboard()"
-                                class="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-gray-700 border border-gray-600 hover:border-gray-500 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
+                                class="flex items-center gap-3 px-5 py-2.5 bg-surface hover:bg-gray-800 border border-gray-700 hover:border-primary/50 rounded-xl text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white shadow-lg hover:shadow-primary/10 group">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4 text-gray-500 group-hover:text-primary transition-colors" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span id="copy-btn-text">Copy Summary</span>
+                                <span id="copy-btn-text" class="group-hover:text-primary transition-colors">Copy to
+                                    Clipboard</span>
                             </button>
                         </div>
 
