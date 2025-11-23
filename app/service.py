@@ -135,9 +135,10 @@ class MeetingService:
                         log.write(f"Extracted Text:\n{cleaned_text}\n\n")
                 except: pass
 
-                # Strategy 3: Fix common JSON errors (newlines in strings)
-                # This is risky but helps with some LLM outputs
-                cleaned_text = cleaned_text.replace('\n', '\\n')
+                # Strategy 3: Fix common JSON errors
+                # We used to replace \n with \\n here, but that breaks pretty-printed JSON.
+                # Only do it if strictly necessary or use a better regex.
+                # For now, let's trust the LLM or use the fallbacks.
                 
                 try:
                     data = json.loads(cleaned_text)
