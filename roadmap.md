@@ -1,51 +1,49 @@
 # Nabu Product Roadmap
 
-This document outlines the development roadmap for Nabu (formerly Meeting Summarizer). It is a living document and will evolve as the project progresses.
+This document outlines the planned features and improvements for Nabu.
 
-## Phase 1: Stabilization & Core Foundation (Current Focus)
-**Goal:** Ensure the core recording and summarization loop is rock-solid and the UI is polished.
+## Phase 1: Core Stability & User Experience (Immediate Focus)
+**Goal:** Fix existing bugs and make the application look and feel premium.
 
-- [ ] **Core Reliability**
-    - [ ] Fix "Audio file not found" race conditions in `AudioRecorder`.
-    - [ ] Verify SQLite concurrency safety for parallel recording/writing.
-    - [ ] Add robust error handling for audio device disconnection.
-- [ ] **UI/UX Polish**
-    - [ ] Improve meeting list layout (spacing, padding).
-    - [ ] Fix long title truncation/wrapping issues.
-    - [ ] Finalize "Royal Blue & Gold" theme implementation.
-    - [ ] Create and integrate final logo and creative assets.
-- [ ] **Project Structure & Roles**
-    - [ ] Define clear roles (Frontend, Backend, UX, QA) in `roles/`.
-    - [ ] Establish collaboration workflows (`collaboration.md`).
+- [ ] **Reliability & Performance**
+    - [ ] Fix "Audio file not found" errors and race conditions in recording.
+    - [ ] Resolve "Invalid sample rate" errors during device switching or startup.
+    - [ ] Ensure database stability when recording and viewing history simultaneously.
+- [ ] **UI/UX Improvements**
+    - [ ] **Visual Polish:** Implement the "Royal Blue & Gold" theme consistently.
+    - [ ] **Layout:** Fix spacing and padding in the meeting list.
+    - [ ] **Typography:** Fix long meeting titles truncating or breaking layout.
+    - [ ] **Feedback:** Add visual indicators for "Recording", "Processing", and "Error" states.
 
-## Phase 2: Feature Expansion (Next Up)
-**Goal:** Add value through new input methods and better data management.
+## Phase 2: Enhanced Input & Management (Short Term)
+**Goal:** Allow users to do more with their data and support more sources.
 
-- [ ] **External Sources**
-    - [ ] Integrate YouTube Audio Downloader as a first-class feature (Import from URL).
-    - [ ] Allow manual upload of existing audio files for summarization.
-- [ ] **Data Management**
-    - [ ] Search functionality for meeting history (by title, tag, content).
-    - [ ] Filter meetings by date range or tags.
-    - [ ] Delete meetings (and associated audio files) from the UI.
-- [ ] **Export & Sharing**
-    - [ ] Export summaries to Markdown and PDF.
-    - [ ] "Copy to Clipboard" button for summaries.
+- [ ] **New Audio Sources**
+    - [ ] **YouTube Import:** Input a YouTube URL to download and summarize the audio.
+    - [ ] **File Upload:** Manually upload existing .mp3/.wav/.m4a files for summarization.
+- [ ] **Meeting Management**
+    - [ ] **Search:** Full-text search for meeting titles, summaries, and transcripts.
+    - [ ] **Filtering:** Filter history by date range, tags, or duration.
+    - [ ] **Delete:** Ability to delete meetings and their audio files from the UI.
+- [ ] **Export Options**
+    - [ ] Export summary to Markdown (.md) and Text (.txt).
+    - [ ] Copy summary to clipboard with one click.
 
-## Phase 3: Advanced Intelligence & Integration (Future)
-**Goal:** Make Nabu a proactive and seamless assistant.
+## Phase 3: Advanced AI & Workflow (Medium Term)
+**Goal:** Transform Nabu from a recorder into an intelligent assistant.
 
-- [ ] **Real-Time Capabilities**
-    - [ ] Live transcription display during recording.
-    - [ ] Real-time keyword spotting/highlighting.
-- [ ] **Deeper Integration**
-    - [ ] Calendar integration (Google Calendar, Outlook) to auto-tag meetings.
-    - [ ] Desktop Application wrapper (Electron/Tauri) for system tray access and global shortcuts.
-- [ ] **Advanced AI**
-    - [ ] Multi-language support (transcription and translation).
-    - [ ] "Ask Nabu" - Chat interface to query your meeting database (RAG).
-    - [ ] Speaker diarization (identifying who said what).
+- [ ] **Real-Time Features**
+    - [ ] Live transcription view while recording.
+    - [ ] Real-time keyword highlighting during meetings.
+- [ ] **Advanced Summarization**
+    - [ ] **Speaker Identification:** Distinguish between different speakers in the transcript.
+    - [ ] **Action Items:** Automatically extract and list action items/todos.
+    - [ ] **Multi-language:** Support for transcribing and summarizing non-English meetings.
+    - [ ] **Chat with Meeting:** "Ask Nabu" interface to query specific details from a meeting.
 
-## Infrastructure & Quality
-- [ ] Set up automated tests (Unit tests for backend, E2E for flow).
-- [ ] CI/CD pipeline for automated testing and linting.
+## Phase 4: System Integration (Long Term)
+**Goal:** Deep integration with the user's desktop environment.
+
+- [ ] **Calendar Sync:** Connect to Google/Outlook Calendar to auto-label recordings.
+- [ ] **System Tray App:** Run in the background with a quick-access menu.
+- [ ] **Global Hotkeys:** Start/Stop recording from anywhere in the OS.

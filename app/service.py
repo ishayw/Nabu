@@ -77,12 +77,14 @@ class MeetingService:
             # Get duration
             try:
                 import soundfile as sf
+                # soundfile supports WAV, FLAC, OGG, but often not M4A/MP3 depending on libs
                 f = sf.SoundFile(filename)
                 duration = len(f) / f.samplerate
                 f.close()
             except Exception as e:
-                print(f"Could not determine duration with soundfile: {e}")
-                # Fallback: try to estimate or just set to 0 (LLM will still work)
+                # print(f"Could not determine duration with soundfile: {e}")
+                # This is expected for M4A/MP3 if libs aren't present. 
+                # We can try to use os.path.getsize as a proxy or just ignore.
                 duration = 0
             
             # Only check duration if we successfully got it
