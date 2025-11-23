@@ -1,6 +1,6 @@
 # Nabu 🖋️
 
-**Nabu** (formerly Meeting Summar izer) is an intelligent local meeting assistant that records, transcribes, and summarizes your meetings automatically.
+**Nabu** (formerly Meeting Summarizer) is an intelligent local meeting assistant that records, transcribes, and summarizes your meetings automatically.
 
 Named after the Mesopotamian god of literacy, scribes, and wisdom, Nabu acts as your personal digital scribe, ensuring you never miss a detail.
 
@@ -16,6 +16,7 @@ Named after the Mesopotamian god of literacy, scribes, and wisdom, Nabu acts as 
 -   **Privacy First**: Recordings and database are stored locally on your machine.
 -   **File Upload Validation**: Automatic validation of file types and sizes for security.
 -   **Pagination**: Efficient browsing of large meeting histories.
+-   **Background Service**: Run permanently in the background on Windows or macOS.
 
 ## Installation
 
@@ -51,6 +52,8 @@ Named after the Mesopotamian god of literacy, scribes, and wisdom, Nabu acts as 
 
 ## Usage
 
+### Manual Start (Development)
+
 1.  **Run the application**:
     ```bash
     python main.py
@@ -58,6 +61,72 @@ Named after the Mesopotamian god of literacy, scribes, and wisdom, Nabu acts as 
 
 2.  **Open the interface**:
     Navigate to `http://localhost:8000` in your browser.
+
+### Background Service (Production)
+
+Run Nabu permanently in the background so it starts automatically with your system.
+
+#### Windows
+
+1. Open PowerShell **as Administrator**
+2. Navigate to the project directory:
+   ```powershell
+   cd path\to\Nabu
+   ```
+3. Run the installation script:
+   ```powershell
+   .\service\windows\install.ps1
+   ```
+4. The service will start automatically at login
+
+**Management Commands:**
+```powershell
+# Start service
+Start-ScheduledTask -TaskName "NabuMeetingSummarizer"
+
+# Stop service
+Stop-ScheduledTask -TaskName "NabuMeetingSummarizer"
+
+# Check status
+Get-ScheduledTask -TaskName "NabuMeetingSummarizer"
+
+# Uninstall
+.\service\windows\uninstall.ps1
+```
+
+#### macOS
+
+1. Open Terminal
+2. Navigate to the project directory:
+   ```bash
+   cd path/to/Nabu
+   ```
+3. Make the script executable and run it:
+   ```bash
+   chmod +x service/macos/install.sh
+   ./service/macos/install.sh
+   ```
+4. The service will start automatically at login
+
+**Management Commands:**
+```bash
+# Check status
+launchctl list | grep nabu
+
+# Stop service
+launchctl unload ~/Library/LaunchAgents/com.nabu.meeting-summarizer.plist
+
+# Start service
+launchctl load ~/Library/LaunchAgents/com.nabu.meeting-summarizer.plist
+
+# View logs
+tail -f app.log
+
+# Uninstall
+./service/macos/uninstall.sh
+```
+
+### Recording Meetings
 
 3.  **Start a Meeting**:
     -   **Automatic**: Join a Google Meet, Zoom, or Teams call. Nabu will detect the audio and start recording.
@@ -100,6 +169,22 @@ See `.env.example` for a complete list with defaults.
 -   ✅ LLM retry logic with exponential backoff
 -   ✅ Pagination for meeting history
 -   ✅ CORS restrictions for production security
+-   ✅ Background service support for Windows and macOS
+
+## Troubleshooting
+
+### Service won't start
+- **Windows**: Check Task Scheduler for error messages
+- **macOS**: Check logs with `tail -f app.log` or `launchctl list | grep nabu`
+
+### FFmpeg not found
+- Install FFmpeg and add to PATH
+- **Windows**: `choco install ffmpeg` or download from [ffmpeg.org](https://ffmpeg.org)
+- **macOS**: `brew install ffmpeg`
+
+### Permission errors
+- **Windows**: Run PowerShell as Administrator
+- **macOS**: Check file permissions with `ls -la service/macos/`
 
 ## License
 
