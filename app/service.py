@@ -103,7 +103,7 @@ class MeetingService:
                 # Parse JSON
                 title = None
                 tags = []
-                summary = response_text
+                summary = ""  # Initialize to empty, not response_text
                 
                 try:
                     import re
@@ -169,7 +169,11 @@ class MeetingService:
 
                     title = data.get("title")
                     tags = data.get("tags", [])
-                    summary = data.get("summary", response_text)
+                    summary = data.get("summary", "")
+                    
+                    # If summary is empty, use the full response as fallback
+                    if not summary:
+                        summary = response_text
                     
                     logger.info(f"✓ JSON parsed successfully")
                     logger.info(f"  Title: {title}")

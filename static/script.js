@@ -276,7 +276,10 @@ function renderHistory(recordings) {
             </div>`;
         }
 
-        const isProcessed = rec.summary_text && rec.summary_text.length > 0;
+        const isProcessed = rec.summary_text &&
+            rec.summary_text.length > 0 &&
+            rec.summary_text !== "Processing..." &&
+            !rec.summary_text.startsWith("{");
         let statusHtml = '';
 
         if (rec.title === "Short Recording" || rec.summary_text === "Recording too short to summarize.") {
