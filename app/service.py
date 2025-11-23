@@ -26,6 +26,7 @@ class MeetingService:
         self.last_voice_time = 0
         self.start_time = 0
         self.manual_override = False # If True, auto-stop is disabled
+        self.notification = None # Store temporary user messages
 
     def start_service(self):
         self.running = True
@@ -89,7 +90,9 @@ class MeetingService:
             
             # Only check duration if we successfully got it
             if duration > 0 and duration < self.min_recording_duration:
-                print(f"Recording too short ({duration:.2f}s). Deleting.")
+                msg = f"Recording too short ({duration:.1f}s). Discarded."
+                print(msg)
+                self.notification = {"type": "warning", "message": msg}
                 os.remove(filename)
                 self.status = MeetingStatus.IDLE
                 return

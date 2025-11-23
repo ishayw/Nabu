@@ -130,11 +130,43 @@ function updateStatus() {
                 timer.classList.add('opacity-0');
                 timer.textContent = '00:00';
                 startTime = null;
-                visualizerPulse.style.transform = 'scale(1)';
                 visualizerPulse.style.opacity = 0;
+            }
+
+            // Check for notifications
+            if (data.notification) {
+                showToast(data.notification.message, data.notification.type);
             }
         })
         .catch(error => console.error('Error:', error));
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) {
+        const c = document.createElement('div');
+        c.id = 'toast-container';
+        c.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2';
+        document.body.appendChild(c);
+    }
+
+    const toast = document.createElement('div');
+    const bgClass = type === 'warning' ? 'bg-yellow-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+    toast.className = `${bgClass} text-white px-4 py-2 rounded shadow-lg transition-opacity duration-500 opacity-0 transform translate-y-2`;
+    toast.textContent = message;
+
+    document.getElementById('toast-container').appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+    });
+
+    // Remove after 3s
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
 }
 
 // --- History & Search ---

@@ -54,10 +54,15 @@ async def get_status():
     status_str = service.status.value if hasattr(service.status, 'value') else str(service.status)
     is_recording = (status_str == "recording")
     
+    # Get and clear notification
+    notification = service.notification
+    service.notification = None
+    
     return {
         "status": status_str,
         "is_recording": is_recording,
-        "rms": float(service.recorder.get_rms())
+        "rms": float(service.recorder.get_rms()),
+        "notification": notification
     }
 
 @app.get("/devices")
