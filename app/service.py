@@ -3,7 +3,13 @@ import time
 import os
 from enum import Enum
 from app.audio_recorder import AudioRecorder
+from app.database import add_meeting, add_tag
+from app.audio_utils import get_audio_duration
+from app.config import Config
+from app.logger import get_logger
 # from app.llm_provider import GeminiProvider # Circular import risk? No, but not implemented yet.
+
+logger = get_logger(__name__)
 
 class MeetingStatus(Enum):
     IDLE = "idle"
@@ -18,10 +24,10 @@ class MeetingService:
         self.running = False
         self.monitor_thread = None
         
-        # VAD Settings
-        self.vad_threshold = 0.03  # RMS Threshold
-        self.silence_duration = 10 # Seconds of silence to stop
-        self.min_recording_duration = 3 # Minimum seconds to keep
+        # VAD Settings from Config
+        self.vad_threshold = Config.VAD_THRESHOLD
+        self.silence_duration = Config.SILENCE_DURATION
+        self.min_recording_duration = Config.MIN_RECORDING_DURATION
         
         self.last_voice_time = 0
         self.start_time = 0
@@ -33,20 +39,20 @@ class MeetingService:
         self.recorder.start_listening() # Start monitoring streams
         self.monitor_thread = threading.Thread(target=self._monitor_loop)
         self.monitor_thread.start()
-        print("Meeting Service Started")
+        logger.info("Meeting Service Started")
 
     def stop_service(self):
         self.running = False
         if self.monitor_thread:
             self.monitor_thread.join()
         self.recorder.stop_listening() # Stop streams
-        print("Meeting Service Stopped")
+        logger.info("Meeting Service Stopped")
 
     def start_recording(self, manual=False):
         if self.status == MeetingStatus.RECORDING:
             return
             
-        print("Starting Recording...")
+        logger.info("Starting Recording...")
         self.status = MeetingStatus.RECORDING
         self.manual_override = manual
         self.start_time = time.time()
@@ -57,7 +63,7 @@ class MeetingService:
         if self.status != MeetingStatus.RECORDING:
             return
 
-        print("Stopping Recording...")
+        logger.info("Stopping Recording...")
         filename = self.recorder.stop_recording()
         self.status = MeetingStatus.PROCESSING
         self.manual_override = False
@@ -67,7 +73,7 @@ class MeetingService:
             threading.Thread(target=self._process_meeting, args=(filename,)).start()
 
     def _process_meeting(self, filename):
-        print(f"Processing meeting: {filename}")
+        logger.info(f"Processing meeting: {filename}")
         # Import here to avoid circular dependency if needed, or use self.llm_provider
         try:
             # We need to parse the JSON response here as per the new requirement
@@ -75,126 +81,136 @@ class MeetingService:
             from app.database import add_meeting, add_tag
             from datetime import datetime
             
-            # Get duration
-            # Get duration
-            try:
-                import soundfile as sf
-                # soundfile supports WAV, FLAC, OGG, but often not M4A/MP3 depending on libs
-                # Use context manager to ensure file is closed
-                with sf.SoundFile(filename) as f:
-                    duration = len(f) / f.samplerate
-            except Exception as e:
-                # print(f"Could not determine duration with soundfile: {e}")
-                duration = 0
+            # Get duration using robust audio_utils
+            duration = get_audio_duration(filename)
             
-            # Only check duration if we successfully got it
+            # Check if recording is too short - skip LLM processing to save API costs
             if duration > 0 and duration < self.min_recording_duration:
-                msg = f"Recording too short ({duration:.1f}s). Discarded."
-                print(msg)
+                logger.info(f"Recording too short ({duration:.1f}s). Skipping LLM processing.")
+                summary = "Recording too short to summarize."
+                title = "Short Recording"
+                tags = ["Short"]
+                
                 self.last_notification = {
                     "id": time.time(),
-                    "type": "warning", 
-                    "message": msg
+                    "type": "info", 
+                    "message": "Recording saved (too short for AI)"
                 }
+            else:
+                logger.info(f"Processing with LLM (duration: {duration:.1f}s)...")
+                response_text = self.llm_provider.process_audio(filename)
                 
-                # Retry delete to handle Windows file locking race conditions
-                for i in range(5):
-                    try:
-                        os.remove(filename)
-                        break
-                    except PermissionError:
-                        time.sleep(0.5)
-                    except FileNotFoundError:
-                        break
-                        
-                self.status = MeetingStatus.IDLE
-                return
-
-            response_text = self.llm_provider.process_audio(filename)
-            
-            # Parse JSON
-            title = None
-            tags = []
-            summary = response_text
-            
-            try:
-                import re
-                
-                # Debug logging
-                try:
-                    with open("debug_log.txt", "w", encoding="utf-8") as log:
-                        log.write(f"Raw Response:\n{response_text}\n\n")
-                except Exception as e:
-                    print(f"Failed to write log: {e}")
-
-                cleaned_text = response_text.strip()
-                
-                # Strategy 1: Remove Markdown Code Blocks
-                if "```" in cleaned_text:
-                    # Simple split to get content between first and last ```
-                    parts = cleaned_text.split("```")
-                    if len(parts) >= 3:
-                        # parts[0] is before, parts[1] is content (maybe with 'json' prefix), parts[2] is after
-                        candidate = parts[1]
-                        if candidate.startswith("json"):
-                            candidate = candidate[4:]
-                        cleaned_text = candidate.strip()
-                
-                # Strategy 2: Regex for JSON object (fallback or refinement)
-                # We look for the outermost {}
-                json_match = re.search(r'\{.*\}', cleaned_text, re.DOTALL)
-                if json_match:
-                    cleaned_text = json_match.group(0)
-                
-                try:
-                    with open("debug_log.txt", "a", encoding="utf-8") as log:
-                        log.write(f"Extracted Text:\n{cleaned_text}\n\n")
-                except: pass
-
-                # Strategy 3: Fix common JSON errors
-                # We used to replace \n with \\n here, but that breaks pretty-printed JSON.
-                # Only do it if strictly necessary or use a better regex.
-                # For now, let's trust the LLM or use the fallbacks.
-                
-                try:
-                    data = json.loads(cleaned_text)
-                except json.JSONDecodeError:
-                    # Try one more time with strict=False if available
-                    # Sometimes trailing commas are the issue
-                    cleaned_text_fixed = re.sub(r',\s*\}', '}', cleaned_text)
-                    cleaned_text_fixed = re.sub(r',\s*\]', ']', cleaned_text_fixed)
-                    try:
-                        data = json.loads(cleaned_text_fixed)
-                    except:
-                        # Fallback: Try ast.literal_eval for Python-style dicts (single quotes)
-                        try:
-                            import ast
-                            # We need to be careful with ast.literal_eval on arbitrary strings, but for this it's okay
-                            # It expects python syntax, so true/false must be True/False, null is None
-                            # We can try to replace them
-                            py_text = cleaned_text.replace("true", "True").replace("false", "False").replace("null", "None")
-                            data = ast.literal_eval(py_text)
-                            if not isinstance(data, dict):
-                                raise ValueError("Not a dict")
-                        except:
-                            raise # Re-raise original error if this fails too
-
-                title = data.get("title")
-                tags = data.get("tags", [])
-                summary = data.get("summary", response_text)
-                
-            except Exception as e:
-                try:
-                    with open("debug_log.txt", "a", encoding="utf-8") as log:
-                        log.write(f"JSON Error: {e}\n")
-                except: pass
-                print(f"Failed to parse JSON: {e}")
+                # Parse JSON
+                title = None
+                tags = []
                 summary = response_text
-                title = "Meeting " + datetime.now().strftime("%Y-%m-%d %H:%M") # Fallback title
+                
+                try:
+                    import re
+                    
+                    # Debug logging
+                    try:
+                        with open("debug_log.txt", "w", encoding="utf-8") as log:
+                            log.write(f"Raw Response:\n{response_text}\n\n")
+                    except Exception as e:
+                        print(f"Failed to write log: {e}")
+
+                    cleaned_text = response_text.strip()
+                    
+                    # Strategy 1: Remove Markdown Code Blocks
+                    if "```" in cleaned_text:
+                        # Simple split to get content between first and last ```
+                        parts = cleaned_text.split("```")
+                        if len(parts) >= 3:
+                            # parts[0] is before, parts[1] is content (maybe with 'json' prefix), parts[2] is after
+                            candidate = parts[1]
+                            if candidate.startswith("json"):
+                                candidate = candidate[4:]
+                            cleaned_text = candidate.strip()
+                    
+                    # Strategy 2: Regex for JSON object (fallback or refinement)
+                    # We look for the outermost {}
+                    json_match = re.search(r'\{.*\}', cleaned_text, re.DOTALL)
+                    if json_match:
+                        cleaned_text = json_match.group(0)
+                    
+                    try:
+                        with open("debug_log.txt", "a", encoding="utf-8") as log:
+                            log.write(f"Extracted Text:\n{cleaned_text}\n\n")
+                    except: pass
+
+                    # Strategy 3: Fix common JSON errors
+                    # We used to replace \n with \\n here, but that breaks pretty-printed JSON.
+                    # Only do it if strictly necessary or use a better regex.
+                    # For now, let's trust the LLM or use the fallbacks.
+                    
+                    try:
+                        data = json.loads(cleaned_text)
+                    except json.JSONDecodeError:
+                        # Try one more time with strict=False if available
+                        # Sometimes trailing commas are the issue
+                        cleaned_text_fixed = re.sub(r',\s*\}', '}', cleaned_text)
+                        cleaned_text_fixed = re.sub(r',\s*\]', ']', cleaned_text_fixed)
+                        try:
+                            data = json.loads(cleaned_text_fixed)
+                        except:
+                            # Fallback: Try ast.literal_eval for Python-style dicts (single quotes)
+                            try:
+                                import ast
+                                # We need to be careful with ast.literal_eval on arbitrary strings, but for this it's okay
+                                # It expects python syntax, so true/false must be True/False, null is None
+                                # We can try to replace them
+                                py_text = cleaned_text.replace("true", "True").replace("false", "False").replace("null", "None")
+                                data = ast.literal_eval(py_text)
+                                if not isinstance(data, dict):
+                                    raise ValueError("Not a dict")
+                            except:
+                                raise # Re-raise original error if this fails too
+
+                    title = data.get("title")
+                    tags = data.get("tags", [])
+                    summary = data.get("summary", response_text)
+                    
+                    logger.info(f"✓ JSON parsed successfully")
+                    logger.info(f"  Title: {title}")
+                    logger.info(f"  Tags ({len(tags)}): {tags}")
+                    
+                except Exception as e:
+                    logger.warning(f"✗ JSON parsing failed: {e}")
+                    try:
+                        with open("debug_log.txt", "a", encoding="utf-8") as log:
+                            log.write(f"JSON Error: {e}\n")
+                    except: pass
+                    
+                    # Even if JSON fails, try to extract title and tags manually using regex
+                    import re as regex_module
+                    try:
+                        # Try to find title
+                        title_match = regex_module.search(r'"title"\s*:\s*"([^"]+)"', response_text)
+                        if title_match:
+                            title = title_match.group(1)
+                            logger.info(f"  ✓ Extracted title via regex: {title}")
+                        
+                        # Try to find tags array
+                        tags_match = regex_module.search(r'"tags"\s*:\s*\[([^\]]+)\]', response_text)
+                        if tags_match:
+                            tags_str = tags_match.group(1)
+                            # Extract individual tags
+                            tag_items = regex_module.findall(r'"([^"]+)"', tags_str)
+                            if tag_items:
+                                tags = tag_items
+                                logger.info(f"  ✓ Extracted {len(tags)} tags via regex: {tags}")
+                    except Exception as regex_e:
+                        logger.error(f"  ✗ Regex extraction also failed: {regex_e}")
+                    
+                    # Fallback summary
+                    summary = response_text
+                    # Only use fallback title if we couldn't extract one
+                    if not title:
+                        title = "Meeting " + datetime.now().strftime("%Y-%m-%d %H:%M") # Fallback title
             
-            # Save to DB
-            # Save to DB
-            # Robust timestamp parsing
+            
+            # Save to DB with robust timestamp parsing
             base_name = os.path.basename(filename)
             name_without_ext = os.path.splitext(base_name)[0]
             # Expected format: meeting_YYYYMMDD_HHMMSS
@@ -224,7 +240,7 @@ class MeetingService:
             
             if result is None:
                 # Meeting already exists (e.g. from upload), so update it
-                print(f"Meeting exists, updating: {title}")
+                logger.info(f"Meeting exists, updating: {title}")
                 from app.database import update_meeting
                 update_meeting(
                     filename=os.path.basename(filename),
@@ -233,15 +249,22 @@ class MeetingService:
                     duration=duration
                 )
             
-            for tag in tags:
-                add_tag(os.path.basename(filename), tag)
+            # Add tags to database
+            if tags:
+                logger.info(f"Saving {len(tags)} tags to database...")
+                for tag in tags:
+                    success = add_tag(os.path.basename(filename), tag)
+                    if success:
+                        logger.info(f"  ✓ Tag saved: {tag}")
+                    else:
+                        logger.warning(f"  ✗ Failed to save tag: {tag}")
+            else:
+                logger.debug("No tags to save")
                 
-            print(f"Meeting processed and saved: {title}")
+            logger.info(f"Meeting processed and saved: {title}")
             
         except Exception as e:
-            print(f"Error processing meeting: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Error processing meeting: {e}", exc_info=True)
             
         self.status = MeetingStatus.IDLE
 
@@ -264,7 +287,7 @@ class MeetingService:
                 if self.status == MeetingStatus.IDLE and not self.manual_override:
                     trigger_count += 1
                     if trigger_count >= REQUIRED_TRIGGER_FRAMES:
-                        print(f"Voice detected. Starting recording. RMS: {rms:.4f}")
+                        logger.info(f"Voice detected. Starting recording. RMS: {rms:.4f}")
                         self.start_recording()
                         trigger_count = 0
                 else:
@@ -276,7 +299,7 @@ class MeetingService:
                 if not self.manual_override:
                     if now - self.last_voice_time > self.silence_duration:
                         if now - self.start_time > self.min_recording_duration:
-                            print("Silence detected. Stopping.")
+                            logger.info("Silence detected. Stopping.")
                             self.stop_recording()
             
             time.sleep(0.1)

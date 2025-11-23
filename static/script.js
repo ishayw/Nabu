@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDevices();
     fetchHistory();
     updateStatus();
-    setInterval(updateStatus, 2000); // Poll status every 2 seconds
-    setInterval(fetchHistory, 5000); // Poll history every 5 seconds
+    setInterval(updateStatus, 1000); // Poll status every 1 second
+    setInterval(fetchHistory, 3000); // Poll history every 3 seconds
 });
 
 // --- Device Management ---
@@ -76,6 +76,17 @@ function control(action) {
         .catch(error => console.error('Error:', error));
 }
 
+function toggleRecording() {
+    const btn = document.getElementById('btn-toggle-record');
+    const currentState = btn.dataset.state || "idle";
+
+    if (currentState === "idle") {
+        control('start');
+    } else {
+        control('stop');
+    }
+}
+
 function updateStatus() {
     fetch('/status')
         .then(response => response.json())
@@ -84,8 +95,9 @@ function updateStatus() {
             const statusText = document.getElementById('status-text');
             const visualizerRing = document.getElementById('visualizer-ring');
             const visualizerPulse = document.getElementById('visualizer-pulse');
-            const btnStart = document.getElementById('btn-start');
-            const btnStop = document.getElementById('btn-stop');
+            const btnToggle = document.getElementById('btn-toggle-record');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
             const timer = document.getElementById('timer');
 
             if (data.is_recording) {
@@ -96,10 +108,14 @@ function updateStatus() {
 
                 visualizerRing.className = "absolute inset-0 rounded-full border-4 opacity-50 transition-all duration-300 border-red-500";
 
-                btnStart.disabled = true;
-                btnStart.classList.add('opacity-50', 'cursor-not-allowed');
-                btnStop.disabled = false;
-                btnStop.classList.remove('opacity-50', 'cursor-not-allowed');
+                // Update Button to Stop (Red)
+                btnToggle.classList.remove('from-primary', 'to-blue-600', 'hover:from-cyan-400', 'hover:to-blue-500', 'shadow-neon', 'hover:shadow-[0_0_20px_rgba(6,182,212,0.6)]');
+                btnToggle.classList.add('from-red-600', 'to-red-800', 'hover:from-red-500', 'hover:to-red-700', 'shadow-red', 'hover:shadow-[0_0_20px_rgba(239,68,68,0.6)]');
+                btnText.textContent = "Stop";
+                btnIcon.className = "w-3 h-3 rounded-sm bg-white shadow-[0_0_10px_white]";
+
+                // Store state for toggle function
+                btnToggle.dataset.state = "recording";
 
                 timer.classList.remove('opacity-0');
 
@@ -123,10 +139,14 @@ function updateStatus() {
 
                 visualizerRing.className = "absolute inset-0 rounded-full border-4 opacity-50 transition-all duration-300 border-gray-700";
 
-                btnStart.disabled = false;
-                btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
-                btnStop.disabled = true;
-                btnStop.classList.add('opacity-50', 'cursor-not-allowed');
+                // Update Button to Record (Original)
+                btnToggle.classList.add('from-primary', 'to-blue-600', 'hover:from-cyan-400', 'hover:to-blue-500', 'shadow-neon', 'hover:shadow-[0_0_20px_rgba(6,182,212,0.6)]');
+                btnToggle.classList.remove('from-red-600', 'to-red-800', 'hover:from-red-500', 'hover:to-red-700', 'shadow-red', 'hover:shadow-[0_0_20px_rgba(239,68,68,0.6)]');
+                btnText.textContent = "Record";
+                btnIcon.className = "w-3 h-3 rounded-full bg-white shadow-[0_0_10px_white] animate-pulse";
+
+                // Store state for toggle function
+                btnToggle.dataset.state = "idle";
 
                 timer.classList.add('opacity-0');
                 timer.textContent = '00:00';
@@ -236,7 +256,7 @@ function renderHistory(recordings) {
 
     recordings.forEach(rec => {
         const item = document.createElement("div");
-        item.className = "p-3 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer border border-gray-700 transition-colors group mb-2";
+        item.className = "p-3 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer border border-gray-700 transition-colors group mb-2 relative";
         item.onclick = () => loadMeeting(rec.filename);
 
         // Format date
@@ -257,13 +277,24 @@ function renderHistory(recordings) {
         }
 
         const isProcessed = rec.summary_text && rec.summary_text.length > 0;
-        const statusHtml = isProcessed
-            ? '<span class="text-green-400 text-xs">Processed</span>'
-            : '<span class="text-yellow-500 text-xs animate-pulse">Processing...</span>';
+        let statusHtml = '';
+
+        if (rec.title === "Short Recording" || rec.summary_text === "Recording too short to summarize.") {
+            statusHtml = '<span class="text-gray-500 text-xs border border-gray-600 px-1 rounded">Too Short</span>';
+        } else if (isProcessed) {
+            statusHtml = '<span class="text-green-400 text-xs">Processed</span>';
+        } else {
+            statusHtml = '<span class="text-yellow-500 text-xs animate-pulse">Processing...</span>';
+        }
 
         item.innerHTML = `
             <div class="flex justify-between items-start mb-1">
-                <span class="font-medium text-gray-300 text-sm truncate w-full" title="${rec.title || rec.filename}">${rec.title || rec.filename}</span>
+                <span class="font-medium text-gray-300 text-sm truncate w-full pr-6" title="${rec.title || rec.filename}">${rec.title || rec.filename}</span>
+                <button onclick="deleteMeeting('${rec.filename}', event)" class="text-gray-500 hover:text-red-500 p-1 absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
             </div>
             <div class="flex justify-between items-center text-xs text-gray-500">
                 <span>${dateStr}</span>
@@ -273,6 +304,26 @@ function renderHistory(recordings) {
         `;
         list.appendChild(item);
     });
+}
+
+async function deleteMeeting(filename, event) {
+    if (event) event.stopPropagation();
+    if (!confirm("Delete this recording?")) return;
+
+    try {
+        const response = await fetch(`${API_URL}/history/${filename}`, { method: "DELETE" });
+        if (response.ok) {
+            fetchHistory();
+            // If currently open, close it
+            if (currentMeetingFilename === filename) {
+                closeMeeting();
+            }
+        } else {
+            alert("Failed to delete");
+        }
+    } catch (error) {
+        console.error("Error deleting:", error);
+    }
 }
 
 async function clearHistory() {

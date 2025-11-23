@@ -1,8 +1,9 @@
 import sqlite3
 import os
 from datetime import datetime
+from app.config import Config
 
-DB_PATH = "meetings.db"
+DB_PATH = Config.DB_PATH
 
 def init_db():
     """Initialize the database with tables."""
@@ -74,10 +75,10 @@ def update_meeting(filename, title=None, summary_text=None, duration=None):
         updates = []
         params = []
         
-        if title:
+        if title is not None:
             updates.append("title = ?")
             params.append(title)
-        if summary_text:
+        if summary_text is not None:
             updates.append("summary_text = ?")
             params.append(summary_text)
         if duration is not None:
@@ -88,7 +89,8 @@ def update_meeting(filename, title=None, summary_text=None, duration=None):
             return False
             
         params.append(filename)
-        sql = f"UPDATE meetings SET {', '.join(updates)} WHERE filename = ?"
+        # Use string concatenation instead of f-string for clarity
+        sql = "UPDATE meetings SET " + ", ".join(updates) + " WHERE filename = ?"
         
         cursor.execute(sql, params)
         conn.commit()

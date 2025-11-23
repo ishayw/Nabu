@@ -5,6 +5,8 @@ from app.server import app, set_service
 from app.audio_recorder import AudioRecorder
 from app.service import MeetingService
 from app.llm_provider import GeminiProvider
+from app.config import Config
+from app.logger import setup_logging, get_logger
 # from app.llm_dummy import DummyProvider # For testing without API key
 
 # --- Log Filtering ---
@@ -16,13 +18,21 @@ class EndpointFilter(logging.Filter):
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
 def main():
-    print("Starting Nabu Meeting Summarizer...")
+    # Setup logging first
+    setup_logging()
+    logger = get_logger(__name__)
+    
+    logger.info("="*60)
+    logger.info("Starting Nabu Meeting Summarizer...")
+    logger.info(f"Environment: {Config.APP_ENV}")
+    logger.info(f"Host: {Config.APP_HOST}:{Config.APP_PORT}")
+    logger.info("="*60)
     
     # Ensure directories exist
-    os.makedirs("recordings", exist_ok=True)
+    os.makedirs(Config.RECORDINGS_DIR, exist_ok=True)
     
     # Initialize components
-    recorder = AudioRecorder(output_dir="recordings")
+    recorder = AudioRecorder(output_dir=Config.RECORDINGS_DIR)
     
     provider = GeminiProvider() 
     # provider = DummyProvider() # Use dummy for now
@@ -37,10 +47,15 @@ def main():
     
     try:
         # Run the API server
-        # host="0.0.0.0" allows external access, "127.0.0.1" is local only
-        uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+        logger.info("Starting FastAPI server...")
+        uvicorn.run(
+            app, 
+            host=Config.APP_HOST, 
+            port=Config.APP_PORT, 
+            log_level="info"
+        )
     except KeyboardInterrupt:
-        print("\nStopping...")
+        logger.info("\nShutting down...")
     finally:
         service.stop_service()
 
