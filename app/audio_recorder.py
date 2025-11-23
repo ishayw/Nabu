@@ -138,7 +138,9 @@ class AudioRecorder:
                     # Not recording, close file if open
                     if file:
                         print("Closing file (recording stopped).")
-                        file.close()
+                        try:
+                            file.close()
+                        except: pass
                         file = None
                         self.file_closed_event.set() # Signal that file is closed
                         

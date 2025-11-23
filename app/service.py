@@ -76,16 +76,15 @@ class MeetingService:
             from datetime import datetime
             
             # Get duration
+            # Get duration
             try:
                 import soundfile as sf
                 # soundfile supports WAV, FLAC, OGG, but often not M4A/MP3 depending on libs
-                f = sf.SoundFile(filename)
-                duration = len(f) / f.samplerate
-                f.close()
+                # Use context manager to ensure file is closed
+                with sf.SoundFile(filename) as f:
+                    duration = len(f) / f.samplerate
             except Exception as e:
                 # print(f"Could not determine duration with soundfile: {e}")
-                # This is expected for M4A/MP3 if libs aren't present. 
-                # We can try to use os.path.getsize as a proxy or just ignore.
                 duration = 0
             
             # Only check duration if we successfully got it
@@ -93,7 +92,17 @@ class MeetingService:
                 msg = f"Recording too short ({duration:.1f}s). Discarded."
                 print(msg)
                 self.notification = {"type": "warning", "message": msg}
-                os.remove(filename)
+                
+                # Retry delete to handle Windows file locking race conditions
+                for i in range(5):
+                    try:
+                        os.remove(filename)
+                        break
+                    except PermissionError:
+                        time.sleep(0.5)
+                    except FileNotFoundError:
+                        break
+                        
                 self.status = MeetingStatus.IDLE
                 return
 
