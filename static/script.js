@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDevices();
     fetchHistory();
     updateStatus();
-    setInterval(updateStatus, 1000); // Poll status every second
+    setInterval(updateStatus, 2000); // Poll status every 2 seconds
     setInterval(fetchHistory, 5000); // Poll history every 5 seconds
 });
 

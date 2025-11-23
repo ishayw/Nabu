@@ -23,6 +23,7 @@ class AudioRecorder:
         self.filename = None
         self.current_mic_rms = 0.0
         self.current_sys_rms = 0.0
+        self.file_closed_event = threading.Event() # Event to signal file closure
         
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -139,12 +140,14 @@ class AudioRecorder:
                         print("Closing file (recording stopped).")
                         file.close()
                         file = None
+                        self.file_closed_event.set() # Signal that file is closed
                         
         except Exception as e:
             print(f"Error in writer: {e}")
         finally:
             if file:
                 file.close()
+                self.file_closed_event.set() # Ensure event is set even on error
             print("Writer thread finished.")
 
     def _normalize_device_name(self, name):
@@ -320,6 +323,7 @@ class AudioRecorder:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.filename = os.path.join(self.output_dir, f"meeting_{timestamp}.wav")
         self.recording = True
+        self.file_closed_event.clear() # Reset event
         print(f"Started recording to {self.filename}")
 
     def stop_recording(self):
@@ -328,6 +332,8 @@ class AudioRecorder:
             return
 
         self.recording = False
+        print("Waiting for file to close...")
+        self.file_closed_event.wait(timeout=5.0) # Wait up to 5 seconds
         print(f"Stopped recording. Saved to {self.filename}")
         return self.filename
 
