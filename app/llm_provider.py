@@ -47,9 +47,12 @@ class GeminiProvider(LLMProvider):
         *   [ ] [Action] - Assigned to [Name]
         
         IMPORTANT:
-        1.  The output MUST be valid JSON. Do not wrap it in markdown code blocks (like ```json). Just return the raw JSON string.
-        2.  Identify speakers by voice if names aren't mentioned (e.g., "Speaker 1").
-        3.  Extract specific technologies, project names, or key categories for the "tags" list (suggest 1-3 tags).
+        1.  The output MUST be valid, parseable JSON. 
+        2.  Do NOT wrap it in markdown code blocks (like ```json). Just return the raw JSON string.
+        3.  Do NOT include trailing commas.
+        4.  Escape any double quotes inside strings.
+        5.  Identify speakers by voice if names aren't mentioned (e.g., "Speaker 1").
+        6.  Extract specific technologies, project names, or key categories for the "tags" list (suggest 1-3 tags).
         """
         
     def process_audio(self, audio_path: str) -> str:

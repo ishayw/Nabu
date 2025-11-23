@@ -133,18 +133,32 @@ class MeetingService:
                         log.write(f"Extracted Text:\n{cleaned_text}\n\n")
                 except: pass
 
-                data = json.loads(cleaned_text)
+                # Strategy 3: Fix common JSON errors (newlines in strings)
+                # This is risky but helps with some LLM outputs
+                cleaned_text = cleaned_text.replace('\n', '\\n')
+                # Revert actual newlines for formatting if needed, but json.loads hates real newlines in strings
+                
+                try:
+                    data = json.loads(cleaned_text)
+                except json.JSONDecodeError:
+                    # Try one more time with strict=False if available (not in stdlib json but we can try manual fix)
+                    # Sometimes trailing commas are the issue
+                    cleaned_text = re.sub(r',\s*\}', '}', cleaned_text)
+                    cleaned_text = re.sub(r',\s*\]', ']', cleaned_text)
+                    data = json.loads(cleaned_text)
+
                 title = data.get("title")
                 tags = data.get("tags", [])
                 summary = data.get("summary", response_text)
                 
-            except json.JSONDecodeError as e:
+            except Exception as e:
                 try:
                     with open("debug_log.txt", "a", encoding="utf-8") as log:
                         log.write(f"JSON Error: {e}\n")
                 except: pass
                 print(f"Failed to parse JSON: {e}")
                 summary = response_text
+                title = "Meeting " + datetime.now().strftime("%Y-%m-%d %H:%M") # Fallback title
             
             # Save to DB
             # Save to DB
