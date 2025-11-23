@@ -204,11 +204,21 @@ class MeetingService:
                             if tag_items:
                                 tags = tag_items
                                 logger.info(f"  ✓ Extracted {len(tags)} tags via regex: {tags}")
+                                
+                        # Try to find summary (careful with nested quotes, usually it's the last field)
+                        # We look for "summary": "..." and try to capture everything until the end of the string or closing brace
+                        summary_match = regex_module.search(r'"summary"\s*:\s*"(.*)"\s*\}', response_text, regex_module.DOTALL)
+                        if summary_match:
+                            summary_candidate = summary_match.group(1)
+                            # Unescape newlines and quotes if possible
+                            summary = summary_candidate.replace('\\n', '\n').replace('\\"', '"')
+                            logger.info(f"  ✓ Extracted summary via regex")
                     except Exception as regex_e:
                         logger.error(f"  ✗ Regex extraction also failed: {regex_e}")
                     
                     # Fallback summary
-                    summary = response_text
+                    if not summary:
+                        summary = response_text
                     # Only use fallback title if we couldn't extract one
                     if not title:
                         title = "Meeting " + datetime.now().strftime("%Y-%m-%d %H:%M") # Fallback title

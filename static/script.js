@@ -400,7 +400,29 @@ async function loadMeeting(filename) {
         const data = await response.json();
 
         document.getElementById("meeting-title").innerText = data.title || "Meeting Summary";
-        document.getElementById("meeting-content").innerHTML = marked.parse(data.summary_text || "No summary available.");
+        let summaryText = data.summary_text || "No summary available.";
+
+        // Fallback: If summary text looks like JSON (backend parsing failed), try to parse it here
+        if (summaryText.trim().startsWith("{")) {
+            try {
+                const parsed = JSON.parse(summaryText);
+                if (parsed.summary) {
+                    summaryText = parsed.summary;
+                    // Also update tags if we found them and they weren't set
+                    if ((!data.tags || data.tags.length === 0) && parsed.tags) {
+                        renderTags(parsed.tags);
+                    }
+                    if (parsed.title) {
+                        document.getElementById("meeting-title").innerText = parsed.title;
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to parse raw JSON summary in frontend:", e);
+            }
+        }
+
+        document.getElementById("meeting-title").innerText = data.title || "Meeting Summary";
+        document.getElementById("meeting-content").innerHTML = marked.parse(summaryText);
 
         // Setup audio
         const audio = document.getElementById("audio-player");
