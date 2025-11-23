@@ -7,5 +7,5 @@ google-generativeai
 python-dotenv
 jinja2
 python-multipart
-python-magic
-python-magic-bin
+# python-magic  # Optional: enables MIME type validation for uploads
+# python-magic-bin  # Optional: Windows binary for python-magic

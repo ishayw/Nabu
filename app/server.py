@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import shutil
-import magic
 from typing import List, Optional
 from datetime import datetime
 from app.service import MeetingService
@@ -17,6 +16,15 @@ from app.config import Config
 from app.logger import get_logger
 
 logger = get_logger(__name__)
+
+# Try to import python-magic for MIME validation (optional)
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+    logger.info("python-magic available - MIME type validation enabled")
+except ImportError:
+    MAGIC_AVAILABLE = False
+    logger.warning("python-magic not available - MIME type validation disabled")
 
 app = FastAPI()
 
@@ -228,15 +236,18 @@ async def upload_recording(file: UploadFile = File(...), background_tasks: Backg
         if file_size == 0:
             raise HTTPException(status_code=400, detail="Empty file")
         
-        # Validate MIME type using python-magic
-        try:
-            mime = magic.from_buffer(content, mime=True)
-            allowed_mimes = ['audio/mpeg', 'audio/mp4', 'audio/x-m4a', 'audio/wav', 
-                           'audio/x-wav', 'audio/flac', 'audio/ogg']
-            if mime not in allowed_mimes:
-                logger.warning(f"File {file.filename} has unexpected MIME type: {mime}")
-        except Exception as e:
-            logger.warning(f"Could not validate MIME type: {e}")
+        # Validate MIME type using python-magic (if available)
+        if MAGIC_AVAILABLE:
+            try:
+                mime = magic.from_buffer(content, mime=True)
+                allowed_mimes = ['audio/mpeg', 'audio/mp4', 'audio/x-m4a', 'audio/wav', 
+                               'audio/x-wav', 'audio/flac', 'audio/ogg']
+                if mime not in allowed_mimes:
+                    logger.warning(f"File {file.filename} has unexpected MIME type: {mime}")
+            except Exception as e:
+                logger.warning(f"Could not validate MIME type: {e}")
+        else:
+            logger.debug("MIME validation skipped (python-magic not available)")
         
         # Save file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
