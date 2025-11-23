@@ -26,7 +26,7 @@ class MeetingService:
         self.last_voice_time = 0
         self.start_time = 0
         self.manual_override = False # If True, auto-stop is disabled
-        self.notification = None # Store temporary user messages
+        self.last_notification = None # Store last user message with ID
 
     def start_service(self):
         self.running = True
@@ -91,7 +91,11 @@ class MeetingService:
             if duration > 0 and duration < self.min_recording_duration:
                 msg = f"Recording too short ({duration:.1f}s). Discarded."
                 print(msg)
-                self.notification = {"type": "warning", "message": msg}
+                self.last_notification = {
+                    "id": time.time(),
+                    "type": "warning", 
+                    "message": msg
+                }
                 
                 # Retry delete to handle Windows file locking race conditions
                 for i in range(5):

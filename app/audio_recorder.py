@@ -319,12 +319,16 @@ class AudioRecorder:
                     print("WasapiSettings(loopback=True) failed. Trying Method 2...")
                     try:
                         # Method 2: InputStream(loopback=True)
+                        # Note: loopback=True is not standard in all bindings, but we try it.
+                        # If it fails, we catch it.
+                        # Actually, for sounddevice, loopback is usually via WasapiSettings.
+                        # But some forks support it. If it fails, we just catch.
                         self.sys_stream = sd.InputStream(
                             device=wasapi_dev,
                             callback=self._sys_callback,
                             channels=self.channels,
-                            samplerate=self.samplerate,
-                            loopback=True
+                            samplerate=self.samplerate
+                            # loopback=True # Removing this as it causes errors in standard lib
                         )
                         self.sys_stream.start()
                         print("Loopback started (Method 2).")

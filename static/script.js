@@ -3,6 +3,7 @@ const API_URL = ""; // Relative path
 let startTime = null;
 let currentMeetingFilename = null;
 let currentTags = [];
+let lastNotificationId = null;
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -134,7 +135,8 @@ function updateStatus() {
             }
 
             // Check for notifications
-            if (data.notification) {
+            if (data.notification && data.notification.id !== lastNotificationId) {
+                lastNotificationId = data.notification.id;
                 showToast(data.notification.message, data.notification.type);
 
                 // UX Enhancement: Also update status text if it's an error/warning
