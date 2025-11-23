@@ -247,7 +247,7 @@ class AudioRecorder:
     def start_listening(self):
         """Starts the audio streams for monitoring (VAD) without recording to file."""
         if (self.mic_stream and self.mic_stream.active) or (self.sys_stream and self.sys_stream.active):
-            return
+            return True
 
         self.mic_queue = queue.Queue()
         self.sys_queue = queue.Queue()
@@ -256,14 +256,47 @@ class AudioRecorder:
 
         try:
             # Mic Stream
-            print(f"Starting Mic Stream on device index: {getattr(self, 'device_index', None)}")
-            self.mic_stream = sd.InputStream(
-                device=getattr(self, 'device_index', None), # Use selected device or default
-                callback=self._mic_callback,
-                channels=self.channels,
-                samplerate=self.samplerate
-            )
-            self.mic_stream.start()
+            device_idx = getattr(self, 'device_index', None)
+            print(f"Starting Mic Stream on device index: {device_idx}")
+            
+            # Try requested samplerate first, then fallback
+            rates_to_try = [self.samplerate]
+            
+            # Get device default if possible
+            if device_idx is not None:
+                try:
+                    dev_info = sd.query_devices(device_idx)
+                    default_rate = int(dev_info['default_samplerate'])
+                    if default_rate not in rates_to_try:
+                        rates_to_try.append(default_rate)
+                except:
+                    pass
+            
+            # Add common rates
+            for r in [44100, 48000, 16000]:
+                if r not in rates_to_try:
+                    rates_to_try.append(r)
+            
+            mic_stream_started = False
+            for rate in rates_to_try:
+                try:
+                    print(f"Trying sample rate: {rate}")
+                    self.mic_stream = sd.InputStream(
+                        device=device_idx,
+                        callback=self._mic_callback,
+                        channels=self.channels,
+                        samplerate=rate
+                    )
+                    self.mic_stream.start()
+                    self.samplerate = rate # Update to the working rate
+                    mic_stream_started = True
+                    print(f"Mic stream started with rate {rate}")
+                    break
+                except Exception as e:
+                    print(f"Failed to start mic with rate {rate}: {e}")
+            
+            if not mic_stream_started:
+                raise Exception("Could not start microphone with any common sample rate.")
 
             # System Stream (Loopback)
             wasapi_dev = self._get_wasapi_loopback_device()
@@ -275,7 +308,7 @@ class AudioRecorder:
                         device=wasapi_dev,
                         callback=self._sys_callback,
                         channels=self.channels,
-                        samplerate=self.samplerate,
+                        samplerate=self.samplerate, # Must match mic for mixing simplicity in _writer
                         extra_settings=sd.WasapiSettings(loopback=True)
                     )
                     self.sys_stream.start()
@@ -306,19 +339,25 @@ class AudioRecorder:
             self.writer_thread = threading.Thread(target=self._writer)
             self.writer_thread.start()
             print("Started listening (monitoring)...")
+            return True
 
         except Exception as e:
             print(f"Failed to start listening: {e}")
             # Clean up if partially started
             self.stop_listening()
+            return False
 
     def start_recording(self):
         """Enables writing to file."""
         if self.recording:
             return
 
+        # Ensure we are listening
         if not (self.mic_stream and self.mic_stream.active):
-            self.start_listening()
+            success = self.start_listening()
+            if not success:
+                print("Cannot start recording: Failed to start listening.")
+                return
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.filename = os.path.join(self.output_dir, f"meeting_{timestamp}.wav")
