@@ -136,6 +136,25 @@ function updateStatus() {
             // Check for notifications
             if (data.notification) {
                 showToast(data.notification.message, data.notification.type);
+
+                // UX Enhancement: Also update status text if it's an error/warning
+                if (data.notification.type === 'warning' || data.notification.type === 'error') {
+                    const statusText = document.getElementById('status-text');
+                    // Only update if we are not currently recording (to avoid confusion)
+                    if (!data.is_recording) {
+                        statusText.textContent = data.notification.message;
+                        statusText.className = "text-lg font-bold tracking-wide text-yellow-500";
+
+                        // Revert after 3s
+                        setTimeout(() => {
+                            // Check again if we are still idle before resetting
+                            if (statusText.textContent === data.notification.message) {
+                                statusText.textContent = "Ready";
+                                statusText.className = "text-2xl font-bold tracking-wide text-white";
+                            }
+                        }, 3000);
+                    }
+                }
             }
         })
         .catch(error => console.error('Error:', error));

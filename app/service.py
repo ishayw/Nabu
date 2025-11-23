@@ -21,7 +21,7 @@ class MeetingService:
         # VAD Settings
         self.vad_threshold = 0.03  # RMS Threshold
         self.silence_duration = 10 # Seconds of silence to stop
-        self.min_recording_duration = 10 # Minimum seconds to keep
+        self.min_recording_duration = 3 # Minimum seconds to keep
         
         self.last_voice_time = 0
         self.start_time = 0
