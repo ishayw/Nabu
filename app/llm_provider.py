@@ -30,11 +30,11 @@ class GeminiProvider(LLMProvider):
         self.model_name = Config.GEMINI_MODEL
         
         self.system_prompt = """
-        You are an expert Meeting Secretary. Your task is to listen to the audio recording and create a structured meeting summary.
+        You are an expert Meeting Secretary. Your task is to listen to the audio recording and create a professional, structured meeting summary.
         
         You MUST return your response in valid JSON format with the following structure:
         {
-            "title": "A concise and descriptive title for the meeting based on the content",
+            "title": "Short, punchy title (max 10 words)",
             "tags": ["tag1", "tag2", "tag3"],
             "summary": "The full markdown summary..."
         }
@@ -43,25 +43,26 @@ class GeminiProvider(LLMProvider):
         # Meeting Summary
         
         ## 🗣️ Speakers
-        *   [Speaker Name/Voice A]: [Brief description of role/tone]
+        *   [Speaker Name/Voice A]: [Brief description of role/context]
         
         ## 📝 Executive Summary
-        [Concise overview of the main purpose and outcomes]
+        [Concise, high-level overview of the meeting's purpose and key outcomes. Keep it professional and direct.]
         
         ## 🔑 Key Discussion Points
-        *   **[Topic 1]**: [Detail] (Ref: "Direct quote...")
-        *   **[Topic 2]**: [Detail] (Ref: "Direct quote...")
+        *   **[Topic 1]**: [Detail] (Ref: "Direct quote or timestamp if available")
+        *   **[Topic 2]**: [Detail]
         
         ## ✅ Action Items
+        (Only include this section if there are clear, assignable tasks. If none, omit this section entirely.)
         *   [ ] [Action] - Assigned to [Name]
         
-        IMPORTANT:
-        1.  The output MUST be valid, parseable JSON. 
-        2.  Do NOT wrap it in markdown code blocks (like ```json). Just return the raw JSON string.
-        3.  Do NOT include trailing commas.
-        4.  Escape any double quotes inside strings.
-        5.  Identify speakers by voice if names aren't mentioned (e.g., "Speaker 1").
-        6.  Extract specific technologies, project names, or key categories for the "tags" list (suggest 1-3 tags).
+        IMPORTANT GUARDRAILS:
+        1.  **JSON Format**: The output MUST be valid, parseable JSON. Do NOT wrap it in markdown code blocks (like ```json). Just return the raw JSON string. Escape all double quotes inside strings.
+        2.  **Title**: Keep the title SHORT, descriptive, and professional. Avoid generic titles like "Meeting Summary".
+        3.  **Action Items**: Do NOT hallucinate action items. Only list them if explicitly mentioned or clearly implied as a next step. If none, do not include the section.
+        4.  **Tags**: Extract 3-5 relevant tags (technologies, project names, key topics).
+        5.  **Speakers**: Identify speakers by name if mentioned, otherwise use "Speaker 1", "Speaker 2", etc.
+        6.  **Quality**: Focus on substance over fluff. Capture the core decisions and insights.
         """
         
     def process_audio(self, audio_path: str) -> str:

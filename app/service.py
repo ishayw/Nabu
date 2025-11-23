@@ -175,12 +175,12 @@ class MeetingService:
                     if not summary:
                         summary = response_text
                     
-                    logger.info(f"✓ JSON parsed successfully")
+                    logger.info(f"[OK] JSON parsed successfully")
                     logger.info(f"  Title: {title}")
                     logger.info(f"  Tags ({len(tags)}): {tags}")
                     
                 except Exception as e:
-                    logger.warning(f"✗ JSON parsing failed: {e}")
+                    logger.warning(f"[ERROR] JSON parsing failed: {e}")
                     try:
                         with open("debug_log.txt", "a", encoding="utf-8") as log:
                             log.write(f"JSON Error: {e}\n")
@@ -193,7 +193,7 @@ class MeetingService:
                         title_match = regex_module.search(r'"title"\s*:\s*"([^"]+)"', response_text)
                         if title_match:
                             title = title_match.group(1)
-                            logger.info(f"  ✓ Extracted title via regex: {title}")
+                            logger.info(f"  [OK] Extracted title via regex: {title}")
                         
                         # Try to find tags array
                         tags_match = regex_module.search(r'"tags"\s*:\s*\[([^\]]+)\]', response_text)
@@ -203,7 +203,7 @@ class MeetingService:
                             tag_items = regex_module.findall(r'"([^"]+)"', tags_str)
                             if tag_items:
                                 tags = tag_items
-                                logger.info(f"  ✓ Extracted {len(tags)} tags via regex: {tags}")
+                                logger.info(f"  [OK] Extracted {len(tags)} tags via regex: {tags}")
                                 
                         # Try to find summary (careful with nested quotes, usually it's the last field)
                         # We look for "summary": "..." and try to capture everything until the end of the string or closing brace
@@ -212,9 +212,9 @@ class MeetingService:
                             summary_candidate = summary_match.group(1)
                             # Unescape newlines and quotes if possible
                             summary = summary_candidate.replace('\\n', '\n').replace('\\"', '"')
-                            logger.info(f"  ✓ Extracted summary via regex")
+                            logger.info(f"  [OK] Extracted summary via regex")
                     except Exception as regex_e:
-                        logger.error(f"  ✗ Regex extraction also failed: {regex_e}")
+                        logger.error(f"  [ERROR] Regex extraction also failed: {regex_e}")
                     
                     # Fallback summary
                     if not summary:
@@ -269,7 +269,7 @@ class MeetingService:
                 for tag in tags:
                     success = add_tag(os.path.basename(filename), tag)
                     if success:
-                        logger.info(f"  ✓ Tag saved: {tag}")
+                        logger.info(f"  [OK] Tag saved: {tag}")
                     else:
                         logger.warning(f"  ✗ Failed to save tag: {tag}")
             else:
