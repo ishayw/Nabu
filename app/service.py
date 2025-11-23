@@ -138,16 +138,29 @@ class MeetingService:
                 # Strategy 3: Fix common JSON errors (newlines in strings)
                 # This is risky but helps with some LLM outputs
                 cleaned_text = cleaned_text.replace('\n', '\\n')
-                # Revert actual newlines for formatting if needed, but json.loads hates real newlines in strings
                 
                 try:
                     data = json.loads(cleaned_text)
                 except json.JSONDecodeError:
-                    # Try one more time with strict=False if available (not in stdlib json but we can try manual fix)
+                    # Try one more time with strict=False if available
                     # Sometimes trailing commas are the issue
-                    cleaned_text = re.sub(r',\s*\}', '}', cleaned_text)
-                    cleaned_text = re.sub(r',\s*\]', ']', cleaned_text)
-                    data = json.loads(cleaned_text)
+                    cleaned_text_fixed = re.sub(r',\s*\}', '}', cleaned_text)
+                    cleaned_text_fixed = re.sub(r',\s*\]', ']', cleaned_text_fixed)
+                    try:
+                        data = json.loads(cleaned_text_fixed)
+                    except:
+                        # Fallback: Try ast.literal_eval for Python-style dicts (single quotes)
+                        try:
+                            import ast
+                            # We need to be careful with ast.literal_eval on arbitrary strings, but for this it's okay
+                            # It expects python syntax, so true/false must be True/False, null is None
+                            # We can try to replace them
+                            py_text = cleaned_text.replace("true", "True").replace("false", "False").replace("null", "None")
+                            data = ast.literal_eval(py_text)
+                            if not isinstance(data, dict):
+                                raise ValueError("Not a dict")
+                        except:
+                            raise # Re-raise original error if this fails too
 
                 title = data.get("title")
                 tags = data.get("tags", [])
