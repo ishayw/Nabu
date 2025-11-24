@@ -374,8 +374,18 @@
                             </div>
                         </div>
 
-                        <!-- Copy Summary Button -->
-                        <div class="flex justify-end">
+                        <!-- Action Buttons -->
+                        <div class="flex justify-between items-center">
+                            <button id="edit-speakers-btn" onclick="openSpeakersEditor()" style="display: none;"
+                                class="flex items-center gap-3 px-5 py-2.5 bg-surface hover:bg-gray-800 border border-gray-700 hover:border-accent/50 rounded-xl text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white shadow-lg hover:shadow-accent/10 group">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4 text-gray-500 group-hover:text-accent transition-colors" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                                <span class="group-hover:text-accent transition-colors">Edit Speakers</span>
+                            </button>
                             <button id="copy-summary-btn" onclick="copySummaryToClipboard()"
                                 class="flex items-center gap-3 px-5 py-2.5 bg-surface hover:bg-gray-800 border border-gray-700 hover:border-primary/50 rounded-xl text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white shadow-lg hover:shadow-primary/10 group">
                                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -492,6 +502,49 @@
                 </button>
                 <button onclick="saveSettings()"
                     class="px-6 py-2 bg-primary hover:bg-cyan-400 rounded-lg text-white font-medium transition-colors shadow-lg">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Speakers Editor Modal -->
+    <div id="speakers-modal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div
+            class="bg-dark border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h2 class="text-2xl font-bold font-display text-white">Edit Speakers</h2>
+                <button onclick="closeSpeakersEditor()"
+                    class="p-2 hover:bg-surface rounded-lg transition-colors text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <div id="speakers-list" class="space-y-4">
+                    <!-- Speaker inputs will be dynamically added here -->
+                </div>
+                <button onclick="addSpeakerInput()"
+                    class="mt-4 px-4 py-2 bg-surface hover:bg-gray-800 border border-gray-700 border-dashed rounded-lg text-sm text-gray-400 hover:text-white hover:border-accent transition-colors">
+                    + Add Speaker
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-800 flex justify-end space-x-3">
+                <button onclick="closeSpeakersEditor()"
+                    class="px-6 py-2 bg-surface hover:bg-gray-800 border border-gray-700 rounded-lg text-gray-300 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="saveSpeakersChanges()"
+                    class="px-6 py-2 bg-accent hover:bg-green-400 rounded-lg text-white font-medium transition-colors shadow-lg">
                     Save Changes
                 </button>
             </div>
