@@ -543,3 +543,104 @@ async function copySummaryToClipboard() {
         alert('Failed to copy to clipboard. Please try again.');
     }
 }
+
+// --- Settings Management ---
+async function openSettings() {
+    try {
+        // Load current settings
+        const response = await fetch(`${API_URL}/settings`);
+        const data = await response.json();
+        const settings = data.settings;
+
+        // Populate form
+        document.getElementById('min_recording_duration').value = settings.min_recording_duration || 3;
+        document.getElementById('delete_short_recordings').checked = settings.delete_short_recordings === 'true';
+        document.getElementById('compress_recordings').checked = settings.compress_recordings === 'true';
+        document.getElementById('auto_detection').checked = settings.auto_detection === 'true';
+        document.getElementById('vad_threshold').value = settings.vad_threshold || 0.03;
+        document.getElementById('silence_duration').value = settings.silence_duration || 10;
+
+        // Show modal
+        document.getElementById('settings-modal').classList.remove('hidden');
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        alert('Failed to load settings');
+    }
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal').classList.add('hidden');
+}
+
+async function saveSettings() {
+    try {
+        const settings = {
+            min_recording_duration: document.getElementById('min_recording_duration').value,
+            delete_short_recordings: document.getElementById('delete_short_recordings').checked.toString(),
+            compress_recordings: document.getElementById('compress_recordings').checked.toString(),
+            auto_detection: document.getElementById('auto_detection').checked.toString(),
+            vad_threshold: document.getElementById('vad_threshold').value,
+            silence_duration: document.getElementById('silence_duration').value,
+        };
+
+        const response = await fetch(`${API_URL}/settings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+            closeSettings();
+            showToast('Settings saved successfully', 'info');
+        } else {
+            alert('Failed to save settings');
+        }
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        alert('Failed to save settings');
+    }
+}
+
+// --- Speakers Editing ---
+function parseSpeakers(summary) {
+    // Extract speakers section from markdown
+    const speakersMatch = summary.match(/## Speakers\n([\s\S]*?)(?=\n## |$)/);
+    if (!speakersMatch) return [];
+
+    const speakersText = speakersMatch[1];
+    const lines = speakersText.split('\n').filter(line => line.trim().startsWith('*'));
+
+    return lines.map(line => {
+        // Parse "*   Name: Description"
+        const match = line.match(/\*\s+(.+?):\s*(.+)/);
+        if (match) {
+            return {
+                name: match[1].trim(),
+                description: match[2].trim()
+            };
+        }
+        return null;
+    }).filter(Boolean);
+}
+
+async function saveSpeakers(filename, speakers) {
+    try {
+        const response = await fetch(`${API_URL}/meeting/${filename}/speakers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ speakers })
+        });
+
+        if (response.ok) {
+            showToast('Speakers updated', 'info');
+            // Reload the meeting to show changes
+            loadMeeting(filename);
+        } else {
+            alert('Failed to update speakers');
+        }
+    } catch (error) {
+        console.error('Error updating speakers:', error);
+        alert('Failed to update speakers');
+    }
+}
+

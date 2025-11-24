@@ -177,11 +177,26 @@
                 Nabu</h1>
         </div>
 
-        <!-- Status Badge -->
-        <div id="status-badge"
-            class="px-3 py-1 rounded-full text-xs font-semibold font-mono bg-surface/50 text-gray-400 flex items-center space-x-2 border border-gray-800 shadow-inner backdrop-blur-sm">
-            <span class="w-2 h-2 rounded-full bg-gray-600 shadow-[0_0_5px_rgba(75,85,99,0.5)]"></span>
-            <span class="uppercase tracking-wider">Idle</span>
+        <div class="flex items-center space-x-4">
+            <!-- Settings Button -->
+            <button onclick="openSettings()"
+                class="p-2 hover:bg-surface rounded-lg transition-colors text-gray-400 hover:text-white border border-transparent hover:border-gray-700"
+                title="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+
+            <!-- Status Badge -->
+            <div id="status-badge"
+                class="px-3 py-1 rounded-full text-xs font-semibold font-mono bg-surface/50 text-gray-400 flex items-center space-x-2 border border-gray-800 shadow-inner backdrop-blur-sm">
+                <span class="w-2 h-2 rounded-full bg-gray-600 shadow-[0_0_5px_rgba(75,85,99,0.5)]"></span>
+                <span class="uppercase tracking-wider">Idle</span>
+            </div>
         </div>
     </header>
 
@@ -383,6 +398,104 @@
             </div>
 
         </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div
+            class="bg-dark border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h2 class="text-2xl font-bold font-display text-white">Settings</h2>
+                <button onclick="closeSettings()"
+                    class="p-2 hover:bg-surface rounded-lg transition-colors text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                <form id="settings-form" class="space-y-6">
+                    <!-- Recording Settings -->
+                    <div>
+                        <h3 class="text-sm font-bold text-primary uppercase tracking-wider mb-4">Recording Settings</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Minimum Recording Duration (seconds)
+                                    <span class="text-xs text-gray-500 font-normal ml-2">Recordings shorter than this
+                                        will skip LLM processing</span>
+                                </label>
+                                <input type="number" id="min_recording_duration" name="min_recording_duration" min="1"
+                                    max="60"
+                                    class="w-full bg-surface border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-primary">
+                            </div>
+
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="delete_short_recordings" name="delete_short_recordings"
+                                    class="w-4 h-4 rounded border-gray-700 bg-surface text-primary focus:ring-primary focus:ring-offset-dark">
+                                <label for="delete_short_recordings" class="text-sm text-gray-300">
+                                    Automatically delete short recordings
+                                </label>
+                            </div>
+
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="compress_recordings" name="compress_recordings"
+                                    class="w-4 h-4 rounded border-gray-700 bg-surface text-primary focus:ring-primary focus:ring-offset-dark">
+                                <label for="compress_recordings" class="text-sm text-gray-300">
+                                    Compress recordings to save disk space (recommended)
+                                </label>
+                            </div>
+
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="auto_detection" name="auto_detection"
+                                    class="w-4 h-4 rounded border-gray-700 bg-surface text-primary focus:ring-primary focus:ring-offset-dark">
+                                <label for="auto_detection" class="text-sm text-gray-300">
+                                    Enable automatic meeting detection (experimental)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div>
+                        <h3 class="text-sm font-bold text-primary uppercase tracking-wider mb-4">Advanced Settings</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">VAD Threshold</label>
+                                <input type="number" id="vad_threshold" name="vad_threshold" step="0.01" min="0.01"
+                                    max="1"
+                                    class="w-full bg-surface border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-primary">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Silence Duration
+                                    (seconds)</label>
+                                <input type="number" id="silence_duration" name="silence_duration" min="1" max="60"
+                                    class="w-full bg-surface border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-primary">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-800 flex justify-end space-x-3">
+                <button onclick="closeSettings()"
+                    class="px-6 py-2 bg-surface hover:bg-gray-800 border border-gray-700 rounded-lg text-gray-300 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="saveSettings()"
+                    class="px-6 py-2 bg-primary hover:bg-cyan-400 rounded-lg text-white font-medium transition-colors shadow-lg">
+                    Save Changes
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
