@@ -128,10 +128,15 @@ tail -f app.log
 
 ### Recording Meetings
 
+> [!NOTE]
+> **Automatic Meeting Detection** is currently in development and is **disabled by default**. The voice activity detection (VAD) mechanism is experimental and may not work reliably in all environments. For best results, use manual recording via the web interface or file uploads.
+>
+> To enable auto-detection (not recommended), set `AUTO_DETECTION=true` in your `.env` file.
+
 3.  **Start a Meeting**:
-    -   **Automatic**: Join a Google Meet, Zoom, or Teams call. Nabu will detect the audio and start recording.
-    -   **Manual**: Click the "Record" button in the UI.
+    -   **Manual Recording**: Click the "Record" button in the UI to start/stop recording.
     -   **Upload**: Drag and drop audio files (WAV, M4A, MP3, FLAC, OGG) for processing.
+    -   **Automatic** (experimental, disabled by default): If enabled, Nabu will detect audio and start recording automatically.
 
 4.  **View Summaries**:
     Once the meeting ends (or you click Stop), Nabu will process the audio and display the summary, title, and tags in the history list.

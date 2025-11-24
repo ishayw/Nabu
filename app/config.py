@@ -22,6 +22,7 @@ class Config:
     DB_PATH = os.getenv("DB_PATH", "meetings.db")
     
     # Recording Settings
+    AUTO_DETECTION = os.getenv("AUTO_DETECTION", "false").lower() == "true"
     VAD_THRESHOLD = float(os.getenv("VAD_THRESHOLD", "0.03"))
     SILENCE_DURATION = int(os.getenv("SILENCE_DURATION", "10"))
     MIN_RECORDING_DURATION = int(os.getenv("MIN_RECORDING_DURATION", "3"))

@@ -298,7 +298,8 @@ class MeetingService:
             if rms > self.vad_threshold:
                 self.last_voice_time = now
                 
-                if self.status == MeetingStatus.IDLE and not self.manual_override:
+                # Only auto-start if AUTO_DETECTION is enabled
+                if Config.AUTO_DETECTION and self.status == MeetingStatus.IDLE and not self.manual_override:
                     trigger_count += 1
                     if trigger_count >= REQUIRED_TRIGGER_FRAMES:
                         logger.info(f"Voice detected. Starting recording. RMS: {rms:.4f}")
