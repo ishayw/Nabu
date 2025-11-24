@@ -14,6 +14,7 @@ from app.database import (
 )
 from app.config import Config
 from app.logger import get_logger
+from app.settings import get_settings_manager
 
 logger = get_logger(__name__)
 
@@ -274,3 +275,84 @@ async def upload_recording(file: UploadFile = File(...), background_tasks: Backg
     except Exception as e:
         logger.error(f"Upload error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Settings endpoints
+@app.get("/settings")
+async def get_settings():
+    """Get all application settings."""
+    try:
+        settings_manager = get_settings_manager()
+        settings = settings_manager.get_all()
+        
+        # Don't expose API key in full
+        if "gemini_api_key" in settings:
+            key = settings["gemini_api_key"]
+            if key and len(key) > 8:
+                settings["gemini_api_key"] = "••••" + key[-4:]
+        
+        return {"settings": settings}
+    except Exception as e:
+        logger.error(f"Error getting settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/settings")
+async def update_settings(settings: dict):
+    """Update application settings."""
+    try:
+        settings_manager = get_settings_manager()
+        
+        for key, value in settings.items():
+            # Skip masked API key
+            if key == "gemini_api_key" and value.startswith("••••"):
+                continue
+            
+            settings_manager.set(key, str(value))
+        
+        logger.info(f"Settings updated: {list(settings.keys())}")
+        return {"status": "success", "message": "Settings updated"}
+    except Exception as e:
+        logger.error(f"Error updating settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/meeting/{filename}/speakers")
+async def update_speakers(filename: str, speakers: dict):
+    """Update speakers in a meeting summary."""
+    try:
+        # Get the meeting
+        meeting = get_meeting(filename)
+        if not meeting:
+            raise HTTPException(status_code=404, detail="Meeting not found")
+        
+        # Parse and update speakers in the summary
+        summary = meeting.get("summary_text", "")
+        
+        # Simple approach: rebuild the Speakers section
+        import re
+        
+        # Find and replace the Speakers section  
+        speakers_section_pattern = r'(## Speakers\n)(.*?)(\n##|\Z)'
+        
+        new_speakers_text = ""
+        for speaker in speakers.get("speakers", []):
+            name = speaker.get("name", "Unknown")
+            description = speaker.get("description", "")
+            new_speakers_text += f"*   {name}: {description}\n"
+        
+        def replace_speakers(match):
+            return match.group(1) + new_speakers_text + match.group(3)
+        
+        updated_summary = re.sub(speakers_section_pattern, replace_speakers, summary, flags=re.DOTALL)
+        
+        # Update in database
+        from app.database import update_meeting
+        update_meeting(filename, summary_text=updated_summary)
+        
+        logger.info(f"Speakers updated for {filename}")
+        return {"status": "success", "message": "Speakers updated"}
+    except Exception as e:
+        logger.error(f"Error updating speakers: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
