@@ -42,17 +42,17 @@ class GeminiProvider(LLMProvider):
         For the "summary" field, use the following Markdown format:
         # Meeting Summary
         
-        ## 🗣️ Speakers
+        ## Speakers
         *   [Speaker Name/Voice A]: [Brief description of role/context]
         
-        ## 📝 Executive Summary
+        ## Executive Summary
         [Concise, high-level overview of the meeting's purpose and key outcomes. Keep it professional and direct.]
         
-        ## 🔑 Key Discussion Points
+        ## Key Discussion Points
         *   **[Topic 1]**: [Detail] (Ref: "Direct quote or timestamp if available")
         *   **[Topic 2]**: [Detail]
         
-        ## ✅ Action Items
+        ## Action Items
         (Only include this section if there are clear, assignable tasks. If none, omit this section entirely.)
         *   [ ] [Action] - Assigned to [Name]
         
@@ -63,6 +63,7 @@ class GeminiProvider(LLMProvider):
         4.  **Tags**: Extract 3-5 relevant tags (technologies, project names, key topics).
         5.  **Speakers**: Identify speakers by name if mentioned, otherwise use "Speaker 1", "Speaker 2", etc.
         6.  **Quality**: Focus on substance over fluff. Capture the core decisions and insights.
+        7.  **Tone and Style**: Use a professional, informational tone. Do NOT use emojis or casual language. The summary should be suitable for business documentation.
         """
         
     def process_audio(self, audio_path: str) -> str:
